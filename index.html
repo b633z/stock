@@ -2,7 +2,9 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>어린이 경제교실: 실전 모의투자 마스터 V4</title>
+  <!-- 모바일 환경에서 화면 배율을 정상적으로 맞추기 위해 뷰포트 메타태그 필수 추가 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>어린이 경제교실: 실전 모의투자 마스터 V4 (모바일 최적화)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -11,87 +13,89 @@
       --bg-color: #eef2f6;
       --primary: #1a237e;
     }
-    body { font-family: 'Pretendard', 'Malgun Gothic', sans-serif; background-color: var(--bg-color); margin: 0; padding: 15px; color: #333; user-select: none; }
+    body { font-family: 'Pretendard', 'Malgun Gothic', sans-serif; background-color: var(--bg-color); margin: 0; padding: 10px; color: #333; user-select: none; }
     .wrapper { max-width: 1450px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
     
     /* 시작 모달 */
-    #start-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-    .start-box { background: white; padding: 30px; border-radius: 16px; text-align: center; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    .name-input { width: 90%; padding: 12px; margin-bottom: 20px; font-size: 1.1em; border: 2px solid #1a237e; border-radius: 8px; text-align: center; }
-    .mode-btn { display: block; width: 100%; padding: 12px; margin: 8px 0; font-size: 1.1em; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    #start-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 15px; box-sizing: border-box;}
+    .start-box { background: white; padding: 30px; border-radius: 16px; text-align: center; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .name-input { width: 90%; padding: 12px; margin-bottom: 20px; font-size: 1.1em; border: 2px solid #1a237e; border-radius: 8px; text-align: center; box-sizing: border-box;}
+    .mode-btn { display: block; width: 100%; padding: 12px; margin: 8px 0; font-size: 1.05em; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
     .btn-retail { background: #1976d2; color: white; }
     .btn-hedge { background: #d32f2f; color: white; }
     .btn-load { background: #43a047; color: white; }
     .mode-btn:hover { opacity: 0.85; transform: scale(1.02); }
 
     /* 헤더 */
-    header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .header-title { font-size: 1.3em; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 12px;}
-    .eco-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7em; color: white; background: #2e7d32; }
-    .time-display { font-size: 1.1em; font-weight: bold; color: #fff; background: var(--primary); padding: 6px 14px; border-radius: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 10px;}
+    .header-title { font-size: 1.2em; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;}
+    .eco-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75em; color: white; background: #2e7d32; white-space: nowrap;}
+    .time-display { font-size: 1em; font-weight: bold; color: #fff; background: var(--primary); padding: 6px 14px; border-radius: 20px; white-space: nowrap;}
     
     /* 대시보드 */
     .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-    .card { background: white; padding: 12px 15px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); border-left: 5px solid var(--primary); }
+    .card { background: white; padding: 12px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); border-left: 5px solid var(--primary); }
     .card.asset-card { border-left-color: #2e7d32; }
     .card.debt-card { border-left-color: #d84315; }
     .card.bank-card { border-left-color: #fbc02d; }
-    .card-title { font-size: 0.8em; color: #666; margin-bottom: 4px; font-weight: bold; }
-    .card-val { font-size: 1.15em; font-weight: 900; }
+    .card-title { font-size: 0.75em; color: #666; margin-bottom: 4px; font-weight: bold; }
+    .card-val { font-size: 1.1em; font-weight: 900; word-break: keep-all;}
 
     /* 프로그램 매매 전광판 */
-    .program-indicator { background: white; padding: 10px 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border: 2px solid #ccc; transition: 0.3s; }
-    .prog-title { font-size: 0.9em; font-weight: bold; color: #555; }
-    .prog-status { font-size: 1.1em; font-weight: 900; }
+    .program-indicator { background: white; padding: 10px 15px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border: 2px solid #ccc; transition: 0.3s; flex-wrap: wrap; gap: 5px;}
+    .prog-title { font-size: 0.85em; font-weight: bold; color: #555; }
+    .prog-status { font-size: 1em; font-weight: 900; }
 
     /* 컨트롤 바 */
-    .control-bar { display: flex; justify-content: space-between; background: white; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); align-items: center; }
-    .btn-sys { padding: 6px 12px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85em; color: white; transition: 0.2s; }
+    .control-bar { display: flex; justify-content: space-between; background: white; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); align-items: center; flex-wrap: wrap; gap: 8px;}
+    .control-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-sys { padding: 6px 10px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; color: white; transition: 0.2s; }
     .btn-sys:hover { opacity: 0.8; }
     .btn-save { background: #00838f; }
     .btn-file { background: #6a1b9a; }
     .btn-menu { background: #e53935; }
 
-    /* 메인 그리드 */
-    .main-grid { display: grid; grid-template-columns: 330px 1fr 400px; gap: 12px; height: 630px; }
+    /* 메인 그리드 (PC 기본) */
+    .main-grid { display: grid; grid-template-columns: 320px 1fr 380px; gap: 12px; height: 630px; }
 
     .panel { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; }
     .panel-header { padding: 10px 14px; font-weight: 800; background: #fafafa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;}
     
     .stock-items { overflow-y: auto; flex: 1; }
-    .stock-item { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; transition: 0.1s; }
+    .stock-item { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; transition: 0.1s; }
     .stock-item:hover { background: #f8fafd; }
     .stock-item.active { background: #e3f2fd; border-left: 4px solid #1976d2; }
     .stock-tag { font-size: 0.65em; padding: 2px 5px; border-radius: 4px; margin-left: 4px; background: #e0e0e0; }
 
     .chart-panel { position: relative; padding: 15px; display: flex; flex-direction: column; }
-    .chart-info { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5px; }
-    .selected-title { font-size: 1.3em; font-weight: 900; display: flex; align-items: center; gap: 8px; }
-    .selected-price { font-size: 1.6em; font-weight: 900; transition: color 0.3s; }
-    .ceo-btn { background: #8e24aa; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.65em; cursor: pointer; font-weight: bold; display: none; }
+    .chart-info { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5px; flex-wrap: wrap; gap: 10px;}
+    .selected-title { font-size: 1.2em; font-weight: 900; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;}
+    .selected-price { font-size: 1.5em; font-weight: 900; transition: color 0.3s; }
+    .ceo-btn { background: #8e24aa; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.7em; cursor: pointer; font-weight: bold; display: none; }
     
-    .chart-timeframe { display: flex; gap: 5px; margin-bottom: 5px; }
-    .tf-btn { padding: 3px 8px; font-size: 0.75em; font-weight: bold; border: 1px solid #ccc; background: #f9f9f9; border-radius: 4px; cursor: pointer; }
+    .chart-timeframe { display: flex; gap: 4px; margin-bottom: 5px; flex-wrap: wrap;}
+    .tf-btn { padding: 4px 8px; font-size: 0.75em; font-weight: bold; border: 1px solid #ccc; background: #f9f9f9; border-radius: 4px; cursor: pointer; }
     .tf-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .chart-container { flex: 1; position: relative; width: 100%; min-height: 250px; } /* 최소 높이 보장 */
 
-    .tabs { display: flex; border-bottom: 1px solid #eee; }
-    .tab-btn { flex: 1; padding: 10px 0; text-align: center; font-weight: 800; cursor: pointer; background: #f9f9f9; border: none; border-bottom: 3px solid transparent; font-size: 0.8em; }
+    .tabs { display: flex; border-bottom: 1px solid #eee; overflow-x: auto; white-space: nowrap; }
+    .tab-btn { flex: 1; padding: 12px 10px; text-align: center; font-weight: 800; cursor: pointer; background: #f9f9f9; border: none; border-bottom: 3px solid transparent; font-size: 0.85em; min-width: 70px;}
     .tab-btn.active { background: white; border-bottom-color: var(--primary); color: var(--primary); }
     .tab-content { padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
 
     .info-box { background: #f8fafd; padding: 10px; border-radius: 8px; font-size: 0.85em; display: flex; flex-direction: column; gap: 5px; }
-    .info-row { display: flex; justify-content: space-between; }
+    .info-row { display: flex; justify-content: space-between; align-items: center;}
     
-    input[type="number"] { width: 100%; padding: 8px; font-size: 0.95em; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    input[type="number"] { width: 100%; padding: 10px; font-size: 1em; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
     .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
     .btn-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-    button.action-btn { padding: 8px; font-size: 0.9em; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; }
+    button.action-btn { padding: 10px; font-size: 0.9em; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; }
     button.action-btn:hover { opacity: 0.85; }
     .btn-buy { background: var(--up-color); }
     .btn-sell { background: var(--down-color); }
     .btn-bank { background: #43a047; }
     .btn-loan { background: #f57c00; }
-    .btn-quick { background: #546e7a; font-size: 0.8em; padding: 6px; }
+    .btn-quick { background: #546e7a; font-size: 0.8em; padding: 8px; }
 
     .text-up { color: var(--up-color); }
     .text-down { color: var(--down-color); }
@@ -100,13 +104,48 @@
     table.history-table th, table.history-table td { border: 1px solid #ddd; padding: 5px; text-align: center; }
     table.history-table th { background: #f0f0f0; }
 
-    #toast-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 100; pointer-events: none; }
-    .toast { background: rgba(0, 0, 0, 0.85); color: white; padding: 12px 18px; border-radius: 8px; font-size: 1em; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); animation: slideDown 0.3s ease-out; text-align: center; min-width: 320px; }
+    #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 10000; pointer-events: none; width: 90%; max-width: 350px;}
+    .toast { background: rgba(0, 0, 0, 0.85); color: white; padding: 12px 18px; border-radius: 8px; font-size: 0.95em; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); animation: slideDown 0.3s ease-out; text-align: center; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* 파산 모달 */
-    #bankrupt-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 99999; }
-    .bankrupt-box { background: white; padding: 40px; border-radius: 16px; text-align: center; max-width: 450px; border: 5px solid #d32f2f; }
+    #bankrupt-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 99999; padding: 15px; box-sizing: border-box;}
+    .bankrupt-box { background: white; padding: 30px; border-radius: 16px; text-align: center; width: 100%; max-width: 450px; border: 5px solid #d32f2f; }
+
+    /* ====================================================
+       ★ 모바일 최적화 (반응형 미디어 쿼리) ★
+       ==================================================== */
+    @media screen and (max-width: 1024px) {
+      .main-grid {
+        /* 태블릿/모바일에서는 세로로 쌓이게 (1단 레이아웃) */
+        grid-template-columns: 1fr; 
+        height: auto; 
+      }
+      .panel {
+        /* 세로로 쌓일 때 각 패널의 기본 높이 지정 */
+        height: 450px; 
+      }
+      .chart-panel {
+        /* 차트 영역은 좀 더 여유있게 확보 */
+        height: 500px; 
+      }
+      .dashboard {
+        /* 상단 대시보드 카드들을 2줄 또는 3줄로 접히게 설정 */
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .dashboard {
+        /* 아주 작은 스마트폰 화면에서는 2칸씩 */
+        grid-template-columns: repeat(2, 1fr); 
+      }
+      /* 총 순자산 카드를 맨 위 전체 너비로 */
+      .dashboard .card:first-child { grid-column: span 2; }
+      
+      .panel {
+        height: 500px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -114,8 +153,8 @@
 <!-- 파산 모달 -->
 <div id="bankrupt-modal">
   <div class="bankrupt-box">
-    <h1 style="color: #d32f2f; font-size: 2.5em; margin: 0 0 10px 0;">🚨 펀드 청산 (부도)</h1>
-    <p style="font-size: 1.1em; color: #333; line-height: 1.5; margin-bottom: 20px;">
+    <h1 style="color: #d32f2f; font-size: 2em; margin: 0 0 10px 0;">🚨 펀드 청산 (부도)</h1>
+    <p style="font-size: 1em; color: #333; line-height: 1.5; margin-bottom: 20px;">
       순자산이 초기 자본금 대비 <b style="color:red">-30% 이하</b>로 하락하여,<br>
       채권단에 의해 헤지펀드가 강제 청산되었습니다.<br>과도한 레버리지(대출) 투자의 무서움을 배웠습니다.
     </p>
@@ -126,18 +165,21 @@
 <!-- 시작 모달 -->
 <div id="start-modal">
   <div class="start-box">
-    <h1 style="color: #1a237e; margin-top: 0; margin-bottom: 10px;">📈 실전 경제 마스터 V4</h1>
-    <p style="color: #555; margin-bottom: 20px;">이름과 투자 모드를 선택하여 게임을 시작하세요.</p>
+    <h1 style="color: #1a237e; margin-top: 0; margin-bottom: 10px; font-size: 1.8em;">📈 실전 경제 마스터 V4.1</h1>
+    <p style="color: #555; margin-bottom: 20px; font-size: 0.9em;">이름과 투자 모드를 선택하여 게임을 시작하세요.</p>
     <input type="text" id="player-name-input" class="name-input" placeholder="투자자/헤지펀드 이름을 입력하세요">
     
-    <button class="mode-btn btn-retail" onclick="startGame('retail')">👤 개인 투자자 (자본 1억 / 대출한도 100억)</button>
-    <button class="mode-btn btn-hedge" onclick="startGame('hedge')">🏦 헤지펀드 (자본 10억 / 대출한도 1,000억)</button>
+    <button class="mode-btn btn-retail" onclick="startGame('retail')">👤 개인 투자자 (자본 1억 / 대출 100억)</button>
+    <button class="mode-btn btn-hedge" onclick="startGame('hedge')">🏦 헤지펀드 (자본 10억 / 대출 1,000억)</button>
     <button class="mode-btn btn-load" onclick="document.getElementById('import-file').click()">📂 저장된 파일로 이어하기</button>
     <input type="file" id="import-file" style="display:none" onchange="importJSON(event)">
   </div>
 </div>
 
 <div class="wrapper" style="filter: blur(5px);" id="main-wrapper">
+  <!-- 알림 토스트 (모바일 대응 위해 밖으로 빼냄) -->
+  <div id="toast-container"></div>
+
   <header>
     <div class="header-title">
       <span id="player-name-display"></span>의 포트폴리오
@@ -148,10 +190,10 @@
 
   <div class="control-bar">
     <div style="font-size: 0.85em; font-weight: bold; color: #555;">⚙️ 시스템 관리</div>
-    <div style="display: flex; gap: 8px;">
-      <button class="btn-sys btn-save" onclick="saveGame()">자동저장</button>
-      <button class="btn-sys btn-file" onclick="exportJSON()">JSON 다운로드</button>
-      <button class="btn-sys" style="background:#37474f;" onclick="document.getElementById('import-file-bar').click()">파일 불러오기</button>
+    <div class="control-buttons">
+      <button class="btn-sys btn-save" onclick="saveGame()">저장</button>
+      <button class="btn-sys btn-file" onclick="exportJSON()">다운로드</button>
+      <button class="btn-sys" style="background:#37474f;" onclick="document.getElementById('import-file-bar').click()">불러오기</button>
       <input type="file" id="import-file-bar" style="display:none" onchange="importJSON(event)">
       <button class="btn-sys btn-menu" onclick="returnToMenu()">🏠 메뉴로</button>
     </div>
@@ -165,9 +207,8 @@
     <div class="card debt-card"><div class="card-title">대출 <span id="loan-rate">(연 7.0%)</span></div><div class="card-val text-down" id="total-debt">0 원</div></div>
   </div>
 
-  <!-- 프로그램 매매 전광판 -->
   <div class="program-indicator" id="prog-box">
-    <div class="prog-title">🤖 [선물-현물 연계] 기관·외국인 프로그램 매매 현황 :</div>
+    <div class="prog-title">🤖 [선물-현물] 기관 매매 동향:</div>
     <div class="prog-status" id="prog-status">⚪ 관망 (베이시스 0.00)</div>
   </div>
 
@@ -178,33 +219,32 @@
     </div>
 
     <div class="panel chart-panel">
-      <div id="toast-container"></div>
       <div class="chart-info">
         <div>
           <div class="selected-title">
             <span id="chart-title">종목명</span>
             <button class="ceo-btn" id="ceo-btn" onclick="renameCompany()">✏️ 경영권 행사</button>
           </div>
-          <div style="color: #666; font-size: 0.85em;" id="chart-desc">시가총액: - | 발행수량: -</div>
+          <div style="color: #666; font-size: 0.8em;" id="chart-desc">시가총액: - | 발행수량: -</div>
         </div>
         <div class="selected-price text-up" id="chart-price">0 원</div>
       </div>
       <div class="chart-timeframe">
-        <span style="font-size:0.75em; font-weight:bold; align-self:center; margin-right:5px;">기간 보기:</span>
+        <span style="font-size:0.75em; font-weight:bold; margin-right:2px;">기간:</span>
         <button class="tf-btn" onclick="setTimeframe('all', this)">전체</button>
         <button class="tf-btn" onclick="setTimeframe(365, this)">1년</button>
         <button class="tf-btn" onclick="setTimeframe(180, this)">6개월</button>
         <button class="tf-btn active" onclick="setTimeframe(60, this)">2달</button>
         <button class="tf-btn" onclick="setTimeframe(30, this)">1달</button>
       </div>
-      <div style="flex: 1; position: relative;"><canvas id="mainChart"></canvas></div>
+      <div class="chart-container"><canvas id="mainChart"></canvas></div>
     </div>
 
     <div class="panel">
       <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('trade')" id="tab-btn-trade">매매</button>
-        <button class="tab-btn" onclick="switchTab('portfolio')" id="tab-btn-portfolio">포트폴리오</button>
-        <button class="tab-btn" onclick="switchTab('info')" id="tab-btn-info">주주명부</button>
+        <button class="tab-btn" onclick="switchTab('portfolio')" id="tab-btn-portfolio">자산</button>
+        <button class="tab-btn" onclick="switchTab('info')" id="tab-btn-info">주주</button>
         <button class="tab-btn" onclick="switchTab('bank')" id="tab-btn-bank">은행</button>
         <button class="tab-btn" onclick="switchTab('news')" id="tab-btn-news">뉴스</button>
       </div>
@@ -228,11 +268,11 @@
         </div>
       </div>
 
-      <!-- 포트폴리오 탭 -->
+      <!-- 자산/포트폴리오 탭 -->
       <div class="tab-content" id="tab-portfolio" style="display: none;">
-        <h3 style="margin: 0; font-size: 0.95em; color: #1a237e;">📦 보유 자산 요약</h3>
+        <h3 style="margin: 0; font-size: 0.9em; color: #1a237e;">📦 보유 자산 요약</h3>
         <div id="portfolio-summary" style="background:#f9f9f9; padding:8px; border-radius:6px; font-size:0.85em; max-height: 120px; overflow-y:auto;"></div>
-        <h3 style="margin: 5px 0 0 0; font-size: 0.95em; color: #1a237e;">📜 거래 내역</h3>
+        <h3 style="margin: 5px 0 0 0; font-size: 0.9em; color: #1a237e;">📜 최근 거래 내역</h3>
         <div style="flex:1; overflow-y:auto; background:#fff; border:1px solid #ddd; border-radius:6px;">
           <table class="history-table">
             <thead><tr><th>일자</th><th>종목</th><th>구분</th><th>수량</th><th>가격</th></tr></thead>
@@ -243,7 +283,7 @@
 
       <!-- 주주명부 -->
       <div class="tab-content" id="tab-info" style="display: none;">
-        <h3 style="margin: 0 0 8px 0; font-size: 0.95em; color: #1a237e;">📋 주주 명부 (Top 10)</h3>
+        <h3 style="margin: 0 0 8px 0; font-size: 0.9em; color: #1a237e;">📋 주주 명부 (Top 10)</h3>
         <div id="shareholders-list" style="flex:1; overflow-y:auto; background:#f9f9f9; padding:8px; border-radius:6px;"></div>
       </div>
 
@@ -253,7 +293,7 @@
           <div class="info-row"><span>예금 원금</span><b id="my-dep-prin">0 원</b></div>
           <div class="info-row"><span>누적 이자</span><b id="my-dep-int">0 원</b></div>
           <hr style="margin: 4px 0; border-top: 1px solid #ddd;">
-          <div class="info-row" style="font-size:1.1em; font-weight:bold; color:#2e7d32;">
+          <div class="info-row" style="font-size:1em; font-weight:bold; color:#2e7d32;">
             <span>총 예금액</span><span id="my-dep-total">0 원</span>
           </div>
         </div>
@@ -263,21 +303,21 @@
           <button class="action-btn btn-quick" onclick="quickBank('deposit', 100000000)">1억</button>
         </div>
         <div style="display:flex; gap:5px; margin-top:5px;">
-          <input type="number" id="bank-manual-dep" placeholder="금액 직접입력">
-          <button class="action-btn btn-bank" style="padding: 0 15px;" onclick="manualBank('deposit')">예금</button>
-          <button class="action-btn btn-bank" style="padding: 0 15px; background:#2e7d32;" onclick="manualBank('withdraw')">출금</button>
+          <input type="number" id="bank-manual-dep" placeholder="금액 입력">
+          <button class="action-btn btn-bank" style="padding: 0 10px; font-size:0.85em;" onclick="manualBank('deposit')">예금</button>
+          <button class="action-btn btn-bank" style="padding: 0 10px; font-size:0.85em; background:#2e7d32;" onclick="manualBank('withdraw')">출금</button>
         </div>
 
-        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 10px 0;">
+        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 8px 0;">
         
         <div class="info-box" style="border-left: 4px solid #f57c00;">
           <div class="info-row"><span>대출 원금</span><b id="my-loan-prin">0 원</b></div>
           <div class="info-row"><span>누적 이자</span><b id="my-loan-int" class="text-down">0 원</b></div>
           <hr style="margin: 4px 0; border-top: 1px solid #ddd;">
-          <div class="info-row" style="font-size:1.1em; font-weight:bold; color:#d84315;">
+          <div class="info-row" style="font-size:1em; font-weight:bold; color:#d84315;">
             <span>총 갚을돈</span><span id="my-loan-total">0 원</span>
           </div>
-          <div style="font-size:0.75em; color:#d32f2f; margin-top:3px;" id="loan-limit-txt">* 대출 한도: -</div>
+          <div style="font-size:0.7em; color:#d32f2f; margin-top:2px;" id="loan-limit-txt">* 대출 한도: -</div>
         </div>
         <div class="btn-grid-3">
           <button class="action-btn btn-quick" onclick="quickBank('borrow', 10000000)">1천만</button>
@@ -285,9 +325,9 @@
           <button class="action-btn btn-quick" onclick="quickBank('borrow', 100000000)">1억</button>
         </div>
         <div style="display:flex; gap:5px; margin-top:5px;">
-          <input type="number" id="bank-manual-loan" placeholder="금액 직접입력">
-          <button class="action-btn btn-loan" style="padding: 0 15px;" onclick="manualBank('borrow')">대출</button>
-          <button class="action-btn btn-loan" style="padding: 0 15px; background:#d84315;" onclick="manualBank('repay')">상환</button>
+          <input type="number" id="bank-manual-loan" placeholder="금액 입력">
+          <button class="action-btn btn-loan" style="padding: 0 10px; font-size:0.85em;" onclick="manualBank('borrow')">대출</button>
+          <button class="action-btn btn-loan" style="padding: 0 10px; font-size:0.85em; background:#d84315;" onclick="manualBank('repay')">상환</button>
         </div>
       </div>
 
@@ -300,14 +340,14 @@
 </div>
 
 <script>
-  // ================= 1. 달력 및 기본 변수 세팅 =================
+  // 로직 부분은 V4와 100% 동일하게 유지
   let currentDate = new Date(2025, 0, 1);
   let gameInterval;
   const MS_PER_DAY = 1000; 
   
-  let gameMode = "retail"; // retail or hedge
+  let gameMode = "retail"; 
   let initialCapital = 100000000;
-  let maxLoan = 10000000000; // 개인 100억
+  let maxLoan = 10000000000;
 
   let playerName = "개인 투자자";
   let cash = 0; 
@@ -326,18 +366,15 @@
     { id: "s3", name: "SK이터닉스", price: 15000, type: "주식", tag: "신재생", beta: 1.4, issued: 5000000, isEquity: true },
     { id: "s4", name: "네이버", price: 180000, type: "주식", tag: "IT", beta: 1.2, issued: 15000000, isEquity: true },
     { id: "s6", name: "에코프로", price: 130000, type: "주식", tag: "2차전지", beta: 2.1, issued: 10000000, isEquity: true },
-
     { id: "g1", name: "테슬라", price: 320000, type: "해외", tag: "EV/AI", beta: 1.8, issued: 30000000, isEquity: true },
     { id: "g2", name: "마이크로소프트", price: 580000, type: "해외", tag: "빅테크", beta: 0.9, issued: 40000000, isEquity: true },
     { id: "g3", name: "엔비디아", price: 180000, type: "해외", tag: "GPU/AI", beta: 2.2, issued: 35000000, isEquity: true },
     { id: "g7", name: "TSMC", price: 210000, type: "해외", tag: "파운드리", beta: 1.3, issued: 45000000, isEquity: true },
-
     { id: "e1", name: "TQQQ (나스닥 3X)", price: 90000, type: "ETF", tag: "레버리지", beta: 3.5, issued: 10000000, isEquity: false },
     { id: "c1", name: "비트코인 (BTC)", price: 120000000, type: "코인", tag: "암호화폐", beta: 2.5, issued: 2100000, isEquity: false },
     { id: "c4", name: "하이프 (HYPE)", price: 15000, type: "코인", tag: "암호화폐", beta: 5.5, issued: 100000000, isEquity: false }
   ];
 
-  // IPO 대기열
   let upcomingIPOs = [
     { id: "ipo1", name: "오픈AI", price: 200000, type: "해외", tag: "빅테크", beta: 2.5, issued: 20000000, isEquity: true },
     { id: "ipo2", name: "스타링크", price: 300000, type: "해외", tag: "우주항공", beta: 2.0, issued: 50000000, isEquity: true },
@@ -348,18 +385,17 @@
   let stocks = [];
   const shNames = ["국민연금", "블랙록", "뱅가드", "미래에셋", "모건스탠리"];
 
-  // ================= 2. 유명 투자자 & 글로벌 뉴스 이벤트 =================
   const globalNews = [
-    { title: "🇺🇸 미국 대통령, '자국 우선주의' 관세 부과 행정명령 서명", impact: -0.05, target: "market" },
-    { title: "🏛️ 파월 연준 의장, '금리 인하 시기 상조' 매파적 발언", impact: -0.06, target: "market" },
-    { title: "🗣️ 워런 버핏, '은밀하게 코인 매집' 루머 확산", impact: 0.15, target: "암호화폐" },
-    { title: "🗣️ 빌 게이츠, '미래는 친환경에 있다' 차세대 에너지 극찬", impact: 0.15, target: "신재생" },
+    { title: "🇺🇸 미국 대통령, '자국 우선주의' 관세 부과 서명", impact: -0.05, target: "market" },
+    { title: "🏛️ 파월 연준 의장, '금리 인하 시기 상조' 매파 발언", impact: -0.06, target: "market" },
+    { title: "🗣️ 워런 버핏, '은밀하게 코인 매집' 루머", impact: 0.15, target: "암호화폐" },
+    { title: "🗣️ 빌 게이츠, '미래는 친환경' 차세대 에너지 극찬", impact: 0.15, target: "신재생" },
     { title: "🗣️ 일론 머스크, '테슬라 로보택시 전면 도입' 선언", impact: 0.18, target: "EV/AI" },
-    { title: "🗣️ 젠슨 황, '엔비디아 차세대 칩 수요 10년 치 예약 완료'", impact: 0.12, target: "반도체" },
-    { title: "🗣️ 샘 올트먼, 'AGI(범용 인공지능) 도래 임박' 깜짝 발표", impact: 0.14, target: "빅테크" },
-    { title: "🗣️ 캐시 우드, '비트코인 목표가 10배' 강력 매수 리포트 발간", impact: 0.10, target: "암호화폐" },
-    { title: "🇷🇺 푸틴-젤렌스키 평화 회담 성사 가능성 제기... 증시 랠리", impact: 0.08, target: "market" },
-    { title: "🇨🇳 중국 정부, 경기 부양 위한 천문학적 유동성 공급 발표", impact: 0.07, target: "market" }
+    { title: "🗣️ 젠슨 황, '엔비디아 칩 10년치 예약 완료'", impact: 0.12, target: "반도체" },
+    { title: "🗣️ 샘 올트먼, 'AGI 도래 임박' 깜짝 발표", impact: 0.14, target: "빅테크" },
+    { title: "🗣️ 캐시 우드, '비트코인 목표가 10배' 매수 리포트", impact: 0.10, target: "암호화폐" },
+    { title: "🇷🇺 지정학적 평화 회담 성사 가능성 제기", impact: 0.08, target: "market" },
+    { title: "🇨🇳 중국 정부, 천문학적 유동성 공급 발표", impact: 0.07, target: "market" }
   ];
 
   function initStockData(s) {
@@ -409,48 +445,36 @@
     return format(val);
   }
 
-  // ================= 3. 메뉴 이동 및 시작 =================
   function returnToMenu() {
     if(!confirm("진행 중인 게임이 초기화됩니다. 메인 메뉴로 돌아가시겠습니까?")) return;
     clearInterval(gameInterval);
     document.getElementById('start-modal').style.display = 'flex';
     document.getElementById('main-wrapper').style.filter = 'blur(5px)';
-    
     cash = 0; depPrin = 0; depInt = 0; loanPrin = 0; loanInt = 0; tradeHistory = [];
     document.getElementById('news-board').innerHTML = "";
   }
 
   function startGame(mode) {
     let nameInput = document.getElementById('player-name-input').value.trim();
-    
     if(mode === 'hedge') {
-      initialCapital = 1000000000; // 10억
-      maxLoan = 100000000000; // 1,000억
-      gameMode = "hedge";
+      initialCapital = 1000000000; maxLoan = 100000000000; gameMode = "hedge";
       playerName = nameInput !== "" ? nameInput : "글로벌 헤지펀드";
     } else {
-      initialCapital = 100000000; // 1억
-      maxLoan = 10000000000; // 100억
-      gameMode = "retail";
+      initialCapital = 100000000; maxLoan = 10000000000; gameMode = "retail";
       playerName = nameInput !== "" ? nameInput : "개인 투자자";
     }
-
     cash = initialCapital;
     document.getElementById('player-name-display').innerText = playerName;
     document.getElementById('loan-limit-txt').innerText = `* 대출 한도: ${formatCap(maxLoan)}원`;
-
     document.getElementById('start-modal').style.display = 'none';
     document.getElementById('main-wrapper').style.filter = 'none';
-    
     initGameSystem(); 
     stocks.sort((a,b) => (b.price * b.issued) - (a.price * a.issued));
     selectedId = stocks[0].id;
     updateUI();
-    
     gameInterval = setInterval(gameLoop, MS_PER_DAY);
   }
 
-  // ================= 4. UI 탭 및 업데이트 =================
   function switchTab(tab) {
     ['trade', 'portfolio', 'info', 'bank', 'news'].forEach(t => {
       document.getElementById(`tab-${t}`).style.display = t === tab ? 'flex' : 'none';
@@ -477,10 +501,10 @@
     let net = cash + totalDep + stockVal - totalLoan;
 
     document.getElementById('cash').innerText = format(cash) + " 원";
-    document.getElementById('bank-deposit').innerText = format(totalDep) + " 원";
-    document.getElementById('total-debt').innerText = format(totalLoan) + " 원";
+    document.getElementById('bank-deposit').innerText = format(Math.floor(totalDep)) + " 원";
+    document.getElementById('total-debt').innerText = format(Math.floor(totalLoan)) + " 원";
     document.getElementById('stock-val').innerText = format(stockVal) + " 원";
-    document.getElementById('net-assets').innerText = format(net) + " 원";
+    document.getElementById('net-assets').innerText = format(Math.floor(net)) + " 원";
 
     document.getElementById('my-dep-prin').innerText = format(depPrin) + " 원";
     document.getElementById('my-dep-int').innerText = format(Math.floor(depInt)) + " 원";
@@ -493,7 +517,6 @@
     if(!s) { selectedId = stocks[0].id; return updateUI(); }
 
     const isUp = s.price >= (s.history[s.history.length - 2] || s.price);
-    
     document.getElementById('chart-title').innerText = s.name;
     document.getElementById('chart-desc').innerText = `시가총액: ${formatCap(s.price * s.issued)} | 수량: ${format(s.issued)}`;
     
@@ -513,8 +536,6 @@
 
     let avg = s.shares > 0 ? s.cost / s.shares : 0;
     let evalProfit = s.shares > 0 ? (s.price * s.shares) - s.cost : 0;
-    let pRate = s.cost > 0 ? (evalProfit / s.cost) * 100 : 0;
-
     document.getElementById('my-shares').innerText = format(s.shares) + " 주(개)";
     document.getElementById('avg-price').innerText = format(avg) + " 원";
     document.getElementById('eval-profit').innerText = format(evalProfit) + " 원";
@@ -532,14 +553,8 @@
       div.className = `stock-item ${st.id === selectedId ? 'active' : ''}`;
       div.onclick = () => { selectedId = st.id; updateUI(); renderShareholders(); };
       div.innerHTML = `
-        <div>
-          <b style="${own >= 50 ? 'color:#ff9800;' : ''}">${st.name}</b> 
-          <span class="stock-tag">${st.tag}</span>
-        </div>
-        <div style="text-align:right;">
-          <b>${format(st.price)}원</b>
-          <div style="font-size:0.8em;" class="${up ? 'text-up' : 'text-down'}">${up?'▲':'▼'} ${Math.abs(diffRate)}%</div>
-        </div>
+        <div><b style="${own >= 50 ? 'color:#ff9800;' : ''}">${st.name}</b><span class="stock-tag">${st.tag}</span></div>
+        <div style="text-align:right;"><b>${format(st.price)}원</b><div style="font-size:0.8em;" class="${up ? 'text-up' : 'text-down'}">${up?'▲':'▼'} ${Math.abs(diffRate)}%</div></div>
       `;
       listEl.appendChild(div);
     });
@@ -574,7 +589,7 @@
     let tbody = document.getElementById('trade-history-body');
     tbody.innerHTML = "";
     if(tradeHistory.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="color:#999; padding:15px;">매매 내역이 없습니다.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5">내역이 없습니다.</td></tr>`;
     } else {
       tradeHistory.slice(-15).reverse().forEach(h => {
         let tr = document.createElement('tr');
@@ -606,16 +621,14 @@
     });
   }
 
-  // ================= 5. 매매 (발행수량 락 적용) 및 은행 로직 =================
   function buyStock() {
     let qty = parseInt(document.getElementById('trade-qty').value);
     if(qty <= 0 || isNaN(qty)) return;
     let s = stocks.find(x => x.id === selectedId);
     
-    // ★ 잔여 유통물량 체크 락 ★
     if(s.shares + qty > s.issued) {
       qty = s.issued - s.shares;
-      if(qty <= 0) return alert("시장에 유통되는 물량이 더 이상 없습니다!");
+      if(qty <= 0) return alert("시장에 유통물량이 없습니다!");
       alert(`시장 유통물량 한계로 잔여 수량인 ${format(qty)}만 매수합니다.`);
     }
 
@@ -629,7 +642,7 @@
     let y = currentDate.getFullYear(); let m = currentDate.getMonth() + 1; let d = currentDate.getDate();
     tradeHistory.push({ dateStr: `${y}/${m}/${d}`, name: s.name, type: '매수', qty: qty, price: s.price });
 
-    if(s.isEquity && old < 50 && now >= 50) showToast(`🎉 [경영권 확보] ${s.name} 지분 50%를 장악했습니다!`, "red");
+    if(s.isEquity && old < 50 && now >= 50) showToast(`🎉 [경영권 확보] ${s.name} 지분 50% 장악!`, "red");
     updateUI(); renderShareholders();
   }
 
@@ -670,7 +683,7 @@
       else { let rem = amt - depInt; depInt = 0; depPrin -= rem; }
     }
     else if(action === 'borrow') { 
-      if(loanPrin + amt > maxLoan) return alert(`대출 한도(${formatCap(maxLoan)}원) 초과!`);
+      if(loanPrin + amt > maxLoan) return alert(`대출 한도 초과!`);
       loanPrin += amt; cash += amt; 
     }
     else if(action === 'repay') { 
@@ -711,7 +724,6 @@
     board.prepend(el);
   }
 
-  // ================= 6. 세이브 & 로드 =================
   function saveGame() {
     const gameState = { timeValue: currentDate.getTime(), playerName, gameMode, initialCapital, maxLoan, cash, depPrin, depInt, loanPrin, loanInt, baseRate, economyState, stocks, tradeHistory, upcomingIPOs };
     localStorage.setItem('econ_sim_master_v4', JSON.stringify(gameState));
@@ -737,10 +749,8 @@
       try {
         const saved = JSON.parse(e.target.result);
         if(saved.timeValue) currentDate = new Date(saved.timeValue);
-        playerName = saved.playerName || "개인 투자자";
-        gameMode = saved.gameMode || "retail";
-        initialCapital = saved.initialCapital || 100000000;
-        maxLoan = saved.maxLoan || 10000000000;
+        playerName = saved.playerName || "개인 투자자"; gameMode = saved.gameMode || "retail";
+        initialCapital = saved.initialCapital || 100000000; maxLoan = saved.maxLoan || 10000000000;
         cash = saved.cash; depPrin = saved.depPrin || 0; depInt = saved.depInt || 0; 
         loanPrin = saved.loanPrin || 0; loanInt = saved.loanInt || 0;
         baseRate = saved.baseRate; economyState = saved.economyState; stocks = saved.stocks; 
@@ -760,58 +770,44 @@
     reader.readAsText(file);
   }
 
-  // ================= 7. 상장 및 상장폐지 이벤트 =================
   function triggerCorporateEvent() {
     let poorStocks = stocks.filter(s => s.price < s.initialPrice * 0.3 && s.id !== selectedId);
-    
-    // 50% 확률로 상장폐지 또는 신규상장
     if (poorStocks.length > 0 && Math.random() < 0.5) {
       let target = poorStocks[Math.floor(Math.random() * poorStocks.length)];
-      showToast(`🚨 [상장폐지] ${target.name} 실적 악화로 시장에서 퇴출(상장폐지) 되었습니다!`, "blue");
-      addNewsBoard(`[시장퇴출] ${target.name} 거래 정지 및 상장폐지`, -0.5);
-      
-      if (target.shares > 0) {
-        alert(`🚨 보유 중이던 [${target.name}] 종목이 상장폐지되어 휴지조각이 되었습니다.`);
-      }
+      showToast(`🚨 [상장폐지] ${target.name} 실적 악화로 시장 퇴출!`, "blue");
+      addNewsBoard(`[시장퇴출] ${target.name} 상장폐지`, -0.5);
+      if (target.shares > 0) alert(`🚨 보유 중이던 [${target.name}] 상장폐지 처리!`);
       stocks = stocks.filter(s => s.id !== target.id);
     } 
     else if (upcomingIPOs.length > 0) {
       let newStock = upcomingIPOs.pop();
       initStockData(newStock);
       stocks.push(newStock);
-      showToast(`🎉 [신규상장] ${newStock.name} 종목이 주식시장에 상장되었습니다!`, "red");
-      addNewsBoard(`[신규상장] ${newStock.name} 증시 데뷔 성공`, 0.1);
+      showToast(`🎉 [신규상장] ${newStock.name} 종목 증시 상장!`, "red");
+      addNewsBoard(`[신규상장] ${newStock.name} 데뷔`, 0.1);
     }
   }
 
-  // ================= 8. 메인 게임 루프 =================
   function gameLoop() {
     currentDate.setDate(currentDate.getDate() + 1);
-    let y = currentDate.getFullYear();
-    let m = currentDate.getMonth() + 1;
-    let d = currentDate.getDate();
+    let y = currentDate.getFullYear(); let m = currentDate.getMonth() + 1; let d = currentDate.getDate();
     document.getElementById('date-display').innerText = `${y}년 ${m}월 ${d}일`;
 
-    let dailyDepInt = (depPrin + depInt) * (baseRate / 365);
-    depInt += dailyDepInt;
-    let dailyLoanInt = (loanPrin + loanInt) * ((baseRate + 0.035) / 365);
-    loanInt += dailyLoanInt;
+    depInt += (depPrin + depInt) * (baseRate / 365);
+    loanInt += (loanPrin + loanInt) * ((baseRate + 0.035) / 365);
 
     let stockVal = stocks.reduce((sum, s) => sum + (s.shares * s.price), 0);
     let net = cash + (depPrin + depInt) + stockVal - (loanPrin + loanInt);
 
-    // ★ 헤지펀드 청산 룰 (초기자금 대비 순자산 -30% 이하 시) ★
     if(gameMode === 'hedge' && net <= initialCapital * 0.7) {
       clearInterval(gameInterval);
       document.getElementById('bankrupt-modal').style.display = 'flex';
       return;
     }
-    // 개인투자자 일반 파산
     if(gameMode === 'retail' && net < -initialCapital) {
       clearInterval(gameInterval);
-      alert("🚨 파산! 빚을 감당하지 못하여 게임이 종료됩니다.");
-      location.reload();
-      return;
+      alert("🚨 파산! 빚을 감당하지 못하여 게임 종료.");
+      location.reload(); return;
     }
 
     if(Math.random() < 0.02) {
@@ -828,7 +824,6 @@
       document.getElementById('loan-rate').innerText = `(연 ${(baseRate+0.035)*100}%)`;
     }
 
-    // 1% 확률(1년에 약 3.6회)로 상장/상폐 이벤트
     if (Math.random() < 0.01) triggerCorporateEvent();
 
     let activeNews = null;
@@ -838,7 +833,6 @@
       addNewsBoard(activeNews.title, activeNews.impact);
     }
 
-    // ★ 프로그램 매매 인디케이터 (베이시스) ★
     let basis = (Math.random() - 0.45) * 3.0; 
     if(economyState === "boom") basis += 1.0; 
     if(economyState === "recession") basis -= 1.0;
@@ -849,11 +843,11 @@
 
     if(basis > 1.5) {
       progBox.style.background = "#ffebee"; progBox.style.borderColor = "#d32f2f";
-      progStatus.innerHTML = `<span style="color:#d32f2f">🔴 콘탱고 (+${basis.toFixed(2)}) : 기관 대량 매수 (현물 상승)</span>`;
+      progStatus.innerHTML = `<span style="color:#d32f2f">🔴 콘탱고 (+${basis.toFixed(2)}) : 기관 대량 매수</span>`;
       programImpact = 0.03; 
     } else if (basis < -1.5) {
       progBox.style.background = "#e3f2fd"; progBox.style.borderColor = "#1976d2";
-      progStatus.innerHTML = `<span style="color:#1976d2">🔵 백워데이션 (${basis.toFixed(2)}) : 기관 매물 폭탄 (현물 하락)</span>`;
+      progStatus.innerHTML = `<span style="color:#1976d2">🔵 백워데이션 (${basis.toFixed(2)}) : 기관 대량 매도</span>`;
       programImpact = -0.03;
     } else {
       progBox.style.background = "white"; progBox.style.borderColor = "#ccc";
@@ -865,8 +859,6 @@
       if(s.type === "코인") ecoVol = (Math.random() - 0.5) * 0.04; 
 
       let delta = (Math.random() - 0.49) * 0.02 + ecoVol;
-      
-      // 프로그램 매매는 주식(현물)에만 영향
       if(s.type === "주식" || s.type === "해외") delta += programImpact * (s.beta || 1);
 
       if(activeNews) {
@@ -878,8 +870,7 @@
       s.price = Math.max(10, Math.round(s.price * (1 + (delta * (s.beta || 1.0)))));
       
       if(s.isEquity && s.price > 2000000 && (s.shares / s.issued) < 0.5) {
-        s.price = Math.floor(s.price / 10);
-        s.issued = s.issued * 10;
+        s.price = Math.floor(s.price / 10); s.issued = s.issued * 10;
         if(s.shares > 0) s.shares = s.shares * 10;
         s.history = s.history.map(p => Math.floor(p / 10));
         showToast(`📉 [액면분할] ${s.name} 주식 10:1 분할!`, "black");
