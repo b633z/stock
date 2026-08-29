@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>주식 & 글로벌 부동산 통합 시뮬레이터</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --border-color: #334155;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 15px; }
+        header h1 { margin: 0; color: #f1f5f9; font-size: 24px; }
+        header p { color: var(--text-muted); font-size: 13px; }
+
+        .dashboard { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 15px; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; }
+        .card h3 { margin: 0 0 5px 0; font-size: 12px; color: var(--text-muted); }
+        .card .value { font-size: 15px; font-weight: bold; color: #38bdf8; }
+
+        .macro-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; background: #111827; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .macro-item { text-align: center; }
+        .macro-item h4 { margin: 0 0 3px 0; font-size: 11px; color: var(--text-muted); }
+        .macro-item span { font-size: 14px; font-weight: bold; }
+
+        .briefing-box { background: #1e1b4b; border: 1px solid #4338ca; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 13px; }
+        .briefing-box h3 { margin: 0 0 5px 0; color: #818cf8; font-size: 14px; }
+
+        .main-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; }
+        .section-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .section-box h2 { margin-top: 0; font-size: 15px; border-bottom: 2px solid var(--border-color); padding-bottom: 6px; color: #f1f5f9; }
+
+        .world-map-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
+        .country-node { background: #0f172a; border: 2px solid var(--border-color); border-radius: 6px; padding: 8px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .country-node:hover { border-color: var(--primary); background: #1e3a8a; }
+        .country-node.active { border-color: var(--success); background: #064e3b; }
+        .country-node .flag { font-size: 18px; }
+        .country-node .c-name { font-size: 11px; font-weight: bold; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 12px; }
+        th { background-color: #0f172a; color: var(--text-muted); font-weight: 600; }
+
+        .btn { background-color: var(--primary); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .btn:hover { background-color: #2563eb; }
+        .btn-danger { background-color: var(--danger); }
+        .btn-success { background-color: var(--success); }
+        
+        .log-box { background-color: #020617; color: #38bdf8; font-family: monospace; padding: 10px; border-radius: 6px; height: 120px; overflow-y: auto; font-size: 11px; line-height: 1.3; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📈 주식 & 🌍 글로벌 부동산 통합 연동 시뮬레이터</h1>
+        <p>주식 투자 수익을 부동산으로 확장하고, 거시경제 지표를 공유하며 거대 리츠들과 경쟁하세요!</p>
+    </header>
+
+    <!-- 거시경제 지표 -->
+    <div class="macro-board">
+        <div class="macro-item"><h4>기준 금리</h4><span id="macro-rate" style="color:var(--warning);">3.5%</span></div>
+        <div class="macro-item"><h4>물가 상승률(CPI)</h4><span id="macro-inflation" style="color:var(--danger);">2.8%</span></div>
+        <div class="macro-item"><h4>주식 시장 지수</h4><span id="stock-index" style="color:var(--success);">3,000 pt</span></div>
+        <div class="macro-item"><h4>투자 심리지수</h4><span id="macro-sentiment" style="color:var(--primary);">탐욕 (Greed)</span></div>
+    </div>
+
+    <!-- 브리핑 -->
+    <div class="briefing-box">
+        <h3>📰 [이달의 통합 경제 브리핑]</h3>
+        <p id="monthly-briefing">주식 시장과 부동산 시장이 실시간 연동되어 운영을 시작합니다.</p>
+    </div>
+
+    <!-- 통합 대시보드 -->
+    <div class="dashboard">
+        <div class="card"><h3>부동산 현금</h3><div class="value" id="cash-display">₩ 0</div></div>
+        <div class="card"><h3>주식 계좌 잔액</h3><div class="value" id="stock-cash-display">₩ 0</div></div>
+        <div class="card"><h3>부동산 가치</h3><div class="value" id="re-value-display">₩ 0</div></div>
+        <div class="card"><h3>총 대출 부채</h3><div class="value" id="debt-display">₩ 0</div></div>
+        <div class="card"><h3>주식 평가 손익</h3><div class="value" id="stock-profit-display">₩ 0</div></div>
+        <div class="card"><h3>종합 순자산</h3><div class="value" id="net-worth-display" style="color:var(--success);">₩ 0</div></div>
+    </div>
+
+    <div class="main-layout">
+        <div>
+            <div class="section-box">
+                <h2>글로벌 투자 지도</h2>
+                <div class="world-map-grid" id="map-grid"></div>
+            </div>
+
+            <div class="section-box">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 id="market-title" style="margin:0;">선택 국가 부동산 시장</h2>
+                    <div>
+                        <button class="btn btn-success" onclick="tradeStockSimulation()" style="margin-right: 5px;">주식 매매/수익내기</button>
+                        <button class="btn" onclick="nextTurn()" style="background-color: #8b5cf6; padding: 7px 12px;">다음 달 턴 진행</button>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>자산 유형</th>
+                            <th>매물 이름</th>
+                            <th>가격</th>
+                            <th>월세/수익성</th>
+                            <th>경쟁사</th>
+                            <th>매입</th>
+                        </tr>
+                    </thead>
+                    <tbody id="market-list"></tbody>
+                </table>
+            </div>
+
+            <div class="section-box">
+                <h2>내가 보유한 부동산 자산</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>국가</th>
+                            <th>유형/이름</th>
+                            <th>매입가</th>
+                            <th>대출금</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="owned-list">
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">보유 자산이 없습니다.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-box">
+                <h2>🏆 글로벌 리츠(REITs) 랭킹</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>순위</th>
+                            <th>회사명</th>
+                            <th>총 자산 가치</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-list"></tbody>
+                </table>
+            </div>
+
+            <div class="section-box">
+                <h2>주식 ⇄ 부동산 자금 이동</h2>
+                <button class="btn" onclick="transferMoney('stockToRe', 200000000)" style="width: 100%; margin-bottom: 6px;">주식 계좌 ➔ 부동산으로 2억 이동</button>
+                <button class="btn btn-danger" onclick="transferMoney('reToStock', 200000000)" style="width: 100%;">부동산 ➔ 주식 계좌로 2억 이동</button>
+            </div>
+
+            <div class="section-box">
+                <h2>실시간 통합 게임 로그</h2>
+                <div class="log-box" id="game-log">
+                    [시스템] 주식 & 부동산 연동 시스템 가동 완료.<br>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const countries = [
+        { id: 'KR', name: '한국', flag: '🇰🇷' }, { id: 'US', name: '미국', flag: '🇺🇸' },
+        { id: 'JP', name: '일본', flag: '🇯🇵' }, { id: 'CN', name: '중국', flag: '🇨🇳' },
+        { id: 'AU', name: '호주', flag: '🇦🇺' }, { id: 'CA', name: '캐나다', flag: '🇨🇦' },
+        { id: 'GB', name: '영국', flag: '🇬🇧' }, { id: 'FR', name: '프랑스', flag: '🇫🇷' },
+        { id: 'DE', name: '독일', flag: '🇩🇪' }, { id: 'ES', name: '스페인', flag: '🇪🇸' }
+    ];
+
+    const propertyTypes = [
+        { type: '토지', nameSuffix: '미개발 나대지', basePrice: 800000000, rent: 0, mult: 0.0 },
+        { type: '빌라', nameSuffix: '다세대 주택', basePrice: 400000000, rent: 1500000, mult: 0.004 },
+        { type: '아파트', nameSuffix: '역세권 아파트', basePrice: 2000000000, rent: 6000000, mult: 0.003 },
+        { type: '상가', nameSuffix: '메인 상가 빌딩', basePrice: 4500000000, rent: 18000000, mult: 0.004 },
+        { type: '물류센터', nameSuffix: '스마트 물류창고', basePrice: 7000000000, rent: 30000000, mult: 0.004 },
+        { type: '재개발', nameSuffix: '노후 구역 지분', basePrice: 1500000000, rent: 500000, mult: 0.001 }
+    ];
+
+    const globalReits = ['블랙스톤', '프로로지스', '사이먼 프로퍼티', '테마섹', '브룩필드'];
+
+    let gameState = {
+        cash: 1000000000,          // 부동산 투자용 현금 (10억)
+        stockCash: 3000000000,     // 주식 계좌 현금/평가금 (30억)
+        stockProfit: 0,            // 주식 누적 수익
+        stockIndex: 3000,          // 주식 시장 지수
+        totalDebt: 0,
+        turn: 1,
+        selectedCountry: 'KR',
+        macro: {
+            interestRate: 3.5,
+            inflation: 2.8,
+            sentiment: '탐욕 (Greed)'
+        },
+        competitors: [
+            { name: '블랙스톤', netWorth: 18000000000 },
+            { name: '프로로지스', netWorth: 14000000000 },
+            { name: '사이먼 프로퍼티', netWorth: 10500000000 },
+            { name: '테마섹', netWorth: 8500000000 },
+            { name: '브룩필드', netWorth: 7000000000 }
+        ],
+        properties: [],
+        ownedProperties: []
+    };
+
+    function formatCurrency(val) { return "₩ " + Math.round(val).toLocaleString(); }
+    function log(msg) {
+        let box = document.getElementById('game-log');
+        box.innerHTML += `<br>[턴 ${gameState.turn}] ${msg}`;
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function generateNewProperties() {
+        let count = Math.floor(Math.random() * 3) + 3;
+        for(let i=0; i<count; i++) {
+            let country = countries[Math.floor(Math.random() * countries.length)].id;
+            let pType = propertyTypes[Math.floor(Math.random() * propertyTypes.length)];
+            let comp = globalReits[Math.floor(Math.random() * globalReits.length)];
+            let priceVariation = pType.basePrice * (0.8 + Math.random() * 0.4);
+            
+            gameState.properties.push({
+                id: Date.now() + Math.random(),
+                country: country,
+                type: pType.type,
+                name: `${country} ${pType.nameSuffix} #${Math.floor(Math.random()*900+100)}`,
+                price: Math.round(priceVariation),
+                rent: Math.round(priceVariation * pType.mult),
+                competitor: comp,
+                owned: false,
+                mortgage: 0
+            });
+        }
+    }
+
+    function renderMap() {
+        let gridHTML = '';
+        countries.forEach(c => {
+            let activeClass = c.id === gameState.selectedCountry ? 'active' : '';
+            gridHTML += `
+                <div class="country-node ${activeClass}" onclick="selectCountry('${c.id}')">
+                    <div class="flag">${c.flag}</div>
+                    <div class="c-name">${c.name}</div>
+                </div>
+            `;
+        });
+        document.getElementById('map-grid').innerHTML = gridHTML;
+    }
+
+    function selectCountry(id) {
+        gameState.selectedCountry = id;
+        renderMap();
+        updateUI();
+    }
+
+    function updateUI() {
+        let reVal = gameState.ownedProperties.reduce((s, p) => s + p.price, 0);
+        let playerNetWorth = gameState.cash + gameState.stockCash + reVal - gameState.totalDebt;
+
+        document.getElementById('cash-display').innerText = formatCurrency(gameState.cash);
+        document.getElementById('stock-cash-display').innerText = formatCurrency(gameState.stockCash);
+        document.getElementById('re-value-display').innerText = formatCurrency(reVal);
+        document.getElementById('debt-display').innerText = formatCurrency(gameState.totalDebt);
+        document.getElementById('stock-profit-display').innerText = formatCurrency(gameState.stockProfit);
+        document.getElementById('net-worth-display').innerText = formatCurrency(playerNetWorth);
+
+        document.getElementById('macro-rate').innerText = gameState.macro.interestRate.toFixed(1) + '%';
+        document.getElementById('macro-inflation').innerText = gameState.macro.inflation.toFixed(1) + '%';
+        document.getElementById('stock-index').innerText = gameState.stockIndex.toLocaleString() + ' pt';
+        document.getElementById('macro-sentiment').innerText = gameState.macro.sentiment;
+
+        let selectedC = countries.find(c => c.id === gameState.selectedCountry);
+        document.getElementById('market-title').innerText = `${selectedC.flag} ${selectedC.name} 부동산 시장`;
+
+        let marketHTML = '';
+        gameState.properties.filter(p => p.country === gameState.selectedCountry && !p.owned).forEach(p => {
+            marketHTML += `
+                <tr>
+                    <td><b>${p.type}</b></td>
+                    <td>${p.name}</td>
+                    <td>${formatCurrency(p.price)}</td>
+                    <td style="color:var(--success);">+${formatCurrency(p.rent)}/월</td>
+                    <td><span style="color:var(--warning);">${p.competitor}</span></td>
+                    <td><button class="btn" onclick="buyProperty(${p.id})">매입</button></td>
+                </tr>
+            `;
+        });
+        if(marketHTML === '') marketHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">이 국가에 등록된 매물이 없습니다.</td></tr>`;
+        document.getElementById('market-list').innerHTML = marketHTML;
+
+        let ownedHTML = '';
+        gameState.ownedProperties.forEach(p => {
+            let cObj = countries.find(c => c.id === p.country);
+            ownedHTML += `
+                <tr>
+                    <td>${cObj.flag} ${cObj.name}</td>
+                    <td><b>[${p.type}]</b> ${p.name}</td>
+                    <td>${formatCurrency(p.price)}</td>
+                    <td>${formatCurrency(p.mortgage)}</td>
+                    <td><button class="btn btn-danger" onclick="sellProperty(${p.id})">매각</button></td>
+                </tr>
+            `;
+        });
+        if(ownedHTML === '') ownedHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">보유한 자산이 없습니다.</td></tr>`;
+        document.getElementById('owned-list').innerHTML = ownedHTML;
+
+        let rankings = [...gameState.competitors, { name: '나 (Player)', netWorth: playerNetWorth }];
+        rankings.sort((a, b) => b.netWorth - a.netWorth);
+
+        let rankHTML = '';
+        rankings.forEach((r, idx) => {
+            let isPlayer = r.name === '나 (Player)' ? 'style="color: var(--success); font-weight: bold;"' : '';
+            rankHTML += `
+                <tr ${isPlayer}>
+                    <td>${idx + 1}위</td>
+                    <td>${r.name}</td>
+                    <td>${formatCurrency(r.netWorth)}</td>
+                </tr>
+            `;
+        });
+        document.getElementById('ranking-list').innerHTML = rankHTML;
+    }
+
+    // 주식 게임에서 매매 및 수익을 발생시키는 시뮬레이션 버튼 함수 (기존 주식 게임 파일의 연동 함수 대체용)
+    function tradeStockSimulation() {
+        let changePercent = (Math.random() * 0.16) - 0.07; // -7% ~ +9% 수익률 변동
+        let profitOrLoss = Math.round(gameState.stockCash * changePercent);
+        gameState.stockCash += profitOrLoss;
+        gameState.stockProfit += profitOrLoss;
+        gameState.stockIndex = Math.round(gameState.stockIndex * (1 + changePercent));
+
+        if (profitOrLoss >= 0) {
+            log(`[주식 연동] 주식 투자 성공! 수익금 ${formatCurrency(profitOrLoss)} 발생 (현재 주가지수: ${gameState.stockIndex})`);
+        } else {
+            log(`[주식 연동] 주식 손실 발생! 손실액 ${formatCurrency(profitOrLoss)} (현재 주가지수: ${gameState.stockIndex})`);
+        }
+        updateUI();
+    }
+
+    function buyProperty(id) {
+        let prop = gameState.properties.find(p => p.id === id);
+        let downPayment = prop.price * 0.4;
+        let loan = prop.price * 0.6;
+
+        if (gameState.cash >= downPayment) {
+            gameState.cash -= downPayment;
+            gameState.totalDebt += loan;
+            prop.owned = true;
+            prop.mortgage = loan;
+            gameState.ownedProperties.push(prop);
+            log(`성공: '${prop.name}' 매입 완료 (대출: ${formatCurrency(loan)})`);
+            updateUI();
+        } else {
+            alert('부동산 현금이 부족합니다! 주식 계좌에서 자금을 이동시켜 주세요.');
+        }
+    }
+
+    function sellProperty(id) {
+        let idx = gameState.ownedProperties.findIndex(p => p.id === id);
+        if (idx !== -1) {
+            let prop = gameState.ownedProperties[idx];
+            let refund = prop.price * 0.95 - prop.mortgage;
+            gameState.cash += Math.max(0, refund);
+            gameState.totalDebt -= prop.mortgage;
+            prop.owned = true;
+            gameState.ownedProperties.splice(idx, 1);
+            log(`매각: '${prop.name}' 처분 완료 (회수금: ${formatCurrency(refund)})`);
+            updateUI();
+        }
+    }
+
+    function nextTurn() {
+        gameState.turn++;
+
+        // 1. 거시경제 연동 변동
+        let rateDelta = (Math.random() - 0.48) * 0.4;
+        gameState.macro.interestRate = Math.max(1.0, Math.min(9.0, gameState.macro.interestRate + rateDelta));
+        
+        let infDelta = (Math.random() - 0.5) * 0.3;
+        gameState.macro.inflation = Math.max(0.5, Math.min(10.0, gameState.macro.inflation + infDelta));
+
+        // 2. 주식 시장과 부동산 시장의 동반 복합 이벤트
+        // 주가지수 변동에 따라 부동산 매물 가격도 연동하여 등락
+        let marketShock = (Math.random() * 0.08) - 0.03;
+        gameState.stockIndex = Math.round(gameState.stockIndex * (1 + marketShock));
+        gameState.stockCash = Math.round(gameState.stockCash * (1 + marketShock * 0.5)); // 주식 잔액도 연동 변동
+
+        gameState.properties.forEach(p => {
+            if(!p.owned) p.price = Math.round(p.price * (1 + marketShock));
+        });
+
+        // 3. 월세 수입 및 대출 이자 정산
+        let totalRent = 0;
+        gameState.ownedProperties.forEach(p => {
+            let adjustedRent = p.rent * (1 + (gameState.macro.inflation / 100) * 0.1);
+            totalRent += adjustedRent;
+        });
+
+        let totalInterest = gameState.totalDebt * (gameState.macro.interestRate / 100 / 12);
+        let netCashFlow = totalRent - totalInterest;
+        gameState.cash += netCashFlow;
+
+        document.getElementById('monthly-briefing').innerText = `기준금리 ${gameState.macro.interestRate.toFixed(1)}%, 주가지수 ${gameState.stockIndex}pt. 주식 시장의 등락이 부동산 실물 자산 가격에 동시 반영되었습니다.`;
+        log(`월말 정산: 월세 수입 ${formatCurrency(totalRent)} - 이자 ${formatCurrency(totalInterest)} = 순 현금흐름 ${formatCurrency(netCashFlow)}`);
+
+        generateNewProperties();
+
+        // 4. AI 리츠 자산 변동
+        gameState.competitors.forEach(c => {
+            c.netWorth *= (1 + (Math.random() * 0.06 - 0.02));
+        });
+
+        updateUI();
+    }
+
+    function transferMoney(type, amount) {
+        if (type === 'stockToRe' && gameState.stockCash >= amount) {
+            gameState.stockCash -= amount;
+            gameState.cash += amount;
+            log(`주식 계좌에서 부동산 현금으로 ${formatCurrency(amount)} 이동 완료.`);
+        } else if (type === 'reToStock' && gameState.cash >= amount) {
+            gameState.cash -= amount;
+            gameState.stockCash += amount;
+            log(`부동산 현금에서 주식 계좌로 ${formatCurrency(amount)} 이동 완료.`);
+        } else {
+            alert('계좌 잔액이 부족합니다!');
+        }
+    }
+
+    generateNewProperties();
+    renderMap();
+    updateUI();
+</script>
+
+</body>
+</html>
